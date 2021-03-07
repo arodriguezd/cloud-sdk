@@ -1,0 +1,20 @@
+.dind:
+  services:
+    - docker:19.03.5-dind
+  image: docker:19.03.5
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+
+build:
+  extends:
+    - .dind
+  stage: build
+  only:
+    - production
+  script:
+    # build the image and tag it to use the GitLab CI docker registry
+    #- docker pull $CI_REGISTRY_IMAGE:latest || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE:latest --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA --tag $CI_REGISTRY_IMAGE:latest .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE:latest
+
